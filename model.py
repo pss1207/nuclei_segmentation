@@ -51,7 +51,7 @@ class DecoderBlock(nn.Module):
         return self.block(x)
 
 
-class UNet16(nn.Module):
+class TernausNet16(nn.Module):
     def __init__(self, num_classes=1, num_filters=32):
         """
         :param num_classes:

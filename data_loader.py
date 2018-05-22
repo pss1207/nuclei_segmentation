@@ -8,7 +8,6 @@ import numpy as np
 
 from tqdm import tqdm
 from skimage.io import imread
-from skimage.transform import resize
 import torch.utils.data as data
 
 import torch
@@ -31,18 +30,14 @@ target_transform = transforms.Compose([
 
 def data_gen(file_path):
     # Set some parameters
-    IMG_WIDTH = 128
-    IMG_HEIGHT = 128
     IMG_CHANNELS = 3
 
-    train_dataset = []
-
+    dataset = []
 
     warnings.filterwarnings('ignore', category=UserWarning, module='skimage')
 
     # Get train and test IDs
     train_ids = next(os.walk(file_path))[1]
-    #train_ids = train_ids[:10]
     # Get and resize train images and masks
     print('Getting and resizing train images and masks ... ')
     sys.stdout.flush()
@@ -50,23 +45,25 @@ def data_gen(file_path):
         item = {}
         path = file_path + id_
         img = imread(path + '/images/' + id_ + '.png')[:,:,:IMG_CHANNELS]
-        #img = resize(img, (IMG_HEIGHT, IMG_WIDTH), mode='constant', preserve_range=True)
 
-        #mask = np.zeros((IMG_HEIGHT, IMG_WIDTH, 1), dtype=np.bool)
-        mask = np.zeros((img.shape[0], img.shape[1], 1), dtype=np.bool)
-        for mask_file in next(os.walk(path + '/masks/'))[2]:
-            mask_ = imread(path + '/masks/' + mask_file)
-            #mask_ = np.expand_dims(resize(mask_, (IMG_HEIGHT, IMG_WIDTH), mode='constant',
-            #                              preserve_range=True), axis=-1)
-            mask_ = np.expand_dims(mask_, axis=-1)
-            mask = np.maximum(mask, mask_)
+
+        if os.path.isdir(path + '/masks/') == True:
+            mask = np.zeros((img.shape[0], img.shape[1], 1), dtype=np.bool)
+            for mask_file in next(os.walk(path + '/masks/'))[2]:
+                mask_ = imread(path + '/masks/' + mask_file)
+                mask_ = np.expand_dims(mask_, axis=-1)
+                mask = np.maximum(mask, mask_)
+        else:
+            mask = np.zeros((img.shape[0], img.shape[1], 1), dtype=np.uint8)
+
         item['input'] = torch.from_numpy(img)
         item['target'] = torch.from_numpy(mask)
-        train_dataset.append(item)
+
+        dataset.append(item)
 
     print('Done!')
 
-    return train_dataset
+    return dataset
 
 class Dataset(data.Dataset):
     def __init__(self, file_path):

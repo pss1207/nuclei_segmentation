@@ -1,23 +1,17 @@
 from __future__ import print_function, division
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
-import os
 import copy
 from data_loader import CreateDataLoader
-from model import UNet16
+from model import TernausNet16
 from loss import LossBinary
 
 
-#from base_dataset import Preproc, Rescale, RandomCrop, ToTensor, Normalization, Resize
-from tqdm import tqdm
 plt.ion()   # interactive mode
 
 
@@ -42,7 +36,8 @@ def imshow(inp, title=None, gray=False):
         plt.imshow(inp)
     else:
         inp = inp.numpy().transpose((1, 2, 0)).squeeze()
-        plt.imshow(inp, cmap='gray')
+        inp_th = (inp > 0.5).astype(np.uint8)
+        plt.imshow(inp_th, cmap='gray')
     if title is not None:
         plt.title(title)
     plt.pause(0.001)  # pause a bit so that plots are updated
@@ -151,7 +146,7 @@ def visualize_model(model, num_images=6):
 
         model.train(mode=was_training)
 
-model_ft = UNet16()
+model_ft = TernausNet16()
 model_ft = model_ft.to(device)
 
 for params in model_ft.parameters():
@@ -168,7 +163,7 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=10)
+                       num_epochs=30)
 
 
 visualize_model(model_ft)
