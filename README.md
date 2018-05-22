@@ -1,5 +1,4 @@
-# nuclei_segmentation
-Nuclei Segmentation
+# Nuclei Segmentation
 
 ## Model
 ![alt text](https://github.com/ternaus/robot-surgery-segmentation/blob/master/images/TernausNet.png)
